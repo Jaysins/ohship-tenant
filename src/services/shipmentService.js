@@ -31,7 +31,7 @@ export const getSavedAddresses = async () => {
  */
 export const createShipment = async (shipmentData) => {
   try {
-    const response = await api.post('/shipments/', shipmentData);
+    const response = await api.post('/admin-shipments/', shipmentData);
 
     if (response.status === 'success' && response.data) {
       return response.data;
@@ -50,7 +50,7 @@ export const createShipment = async (shipmentData) => {
  */
 export const getShipments = async () => {
   try {
-    const response = await api.get('/shipments/');
+    const response = await api.get('/admin-shipments/');
 
     if (response.status === 'success' && response.data) {
       return response.data;
@@ -70,7 +70,7 @@ export const getShipments = async () => {
  */
 export const getShipmentById = async (shipmentId) => {
   try {
-    const response = await api.get(`/shipments/${shipmentId}/`);
+    const response = await api.get(`/admin-shipments/${shipmentId}/`);
 
     if (response.status === 'success' && response.data) {
       return response.data;
@@ -110,7 +110,7 @@ export const getItemCategories = async () => {
  */
 export const updateShipment = async (shipmentId, updateData) => {
   try {
-    const response = await api.patch(`/shipments/${shipmentId}/`, updateData);
+    const response = await api.patch(`/admin-shipments/${shipmentId}/`, updateData);
 
     if (response.status === 'success' && response.data) {
       return response.data;
