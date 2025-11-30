@@ -16,7 +16,7 @@ import api from '../utils/api';
  */
 export const getTransactions = async (params = {}) => {
   try {
-    const response = await api.get('/admin-transactions/', { params });
+    const response = await api.get('/transactions/', { params });
 
     if (response.status === 'success' && response.data) {
       return response.data;
@@ -36,7 +36,7 @@ export const getTransactions = async (params = {}) => {
  */
 export const getTransactionById = async (id) => {
   try {
-    const response = await api.get(`/admin-transactions/${id}/`);
+    const response = await api.get(`/transactions/${id}/`);
 
     if (response.status === 'success' && response.data) {
       return response.data;
