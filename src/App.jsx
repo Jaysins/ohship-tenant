@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { TenantConfigProvider } from './context/TenantConfigContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import Login from './pages/Login';
@@ -26,9 +27,10 @@ import PaymentUploadSuccess from './pages/payment/PaymentUploadSuccess';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
+    <TenantConfigProvider>
+      <Router>
+        <AuthProvider>
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -212,6 +214,7 @@ function App() {
         </Routes>
       </AuthProvider>
     </Router>
+    </TenantConfigProvider>
   );
 }
 

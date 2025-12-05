@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, MapPin, Plus, X, CheckCircle2, Shield, ArrowRight } from 'lucide-react';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -11,6 +12,7 @@ import { getItemCategories } from '../services/shipmentService';
 
 const Quote = () => {
   const navigate = useNavigate();
+  const { theme, getBorderRadius } = useTenantConfig();
   const [categories, setCategories] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [fetchingQuotes, setFetchingQuotes] = useState(false);
@@ -181,8 +183,8 @@ const Quote = () => {
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Get a Quote</h1>
-        <p className="text-slate-600">Get instant shipping quotes from multiple carriers</p>
+        <h1 className="text-2xl font-bold" style={{ color: theme.text.primary }}>Get a Quote</h1>
+        <p style={{ color: theme.text.secondary }}>Get instant shipping quotes from multiple carriers</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -191,14 +193,14 @@ const Quote = () => {
           {/* Origin & Destination */}
           <Card title={
             <div className="flex items-center gap-2">
-              <MapPin size={20} className="text-indigo-600" />
+              <MapPin size={20} style={{ color: theme.primary_color }} />
               <span>Origin & Destination</span>
             </div>
           } padding="default">
             <div className="space-y-6">
               {/* Origin */}
               <div>
-                <p className="text-sm font-semibold text-slate-900 mb-3">Origin</p>
+                <p className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Origin</p>
                 <div className="grid grid-cols-3 gap-4">
                   <Select
                     label="Country"
@@ -226,7 +228,7 @@ const Quote = () => {
 
               {/* Destination */}
               <div>
-                <p className="text-sm font-semibold text-slate-900 mb-3">Destination</p>
+                <p className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Destination</p>
                 <div className="grid grid-cols-3 gap-4">
                   <Select
                     label="Country"
@@ -257,7 +259,7 @@ const Quote = () => {
           {/* Package Items */}
           <Card title={
             <div className="flex items-center gap-2">
-              <Package size={20} className="text-indigo-600" />
+              <Package size={20} style={{ color: theme.primary_color }} />
               <span>Package Items</span>
             </div>
           } padding="default">
@@ -265,20 +267,41 @@ const Quote = () => {
               {formData.items.map((item, index) => (
                 <div
                   key={index}
-                  className="p-4 border border-slate-200 rounded-lg hover:border-indigo-300 transition-all"
+                  className={`p-4 border ${getBorderRadius()} transition-all`}
+                  style={{
+                    borderColor: theme.border.color
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = theme.primary_color;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = theme.border.color;
+                  }}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <span className="text-xs font-semibold text-indigo-600">{index + 1}</span>
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{
+                          backgroundColor: `${theme.primary_color}1A`
+                        }}
+                      >
+                        <span className="text-xs font-semibold" style={{ color: theme.primary_color }}>{index + 1}</span>
                       </div>
-                      <h4 className="text-sm font-semibold text-slate-900">Item {index + 1}</h4>
+                      <h4 className="text-sm font-semibold" style={{ color: theme.text.primary }}>Item {index + 1}</h4>
                     </div>
                     {formData.items.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                        className="transition-colors p-1 rounded"
+                        style={{ color: theme.danger_color }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = `${theme.danger_color}0D`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                       >
                         <X size={18} />
                       </button>
@@ -373,7 +396,7 @@ const Quote = () => {
           {/* Options */}
           <Card title={
             <div className="flex items-center gap-2">
-              <Shield size={20} className="text-indigo-600" />
+              <Shield size={20} style={{ color: theme.primary_color }} />
               <span>Options</span>
             </div>
           } padding="default">
@@ -382,9 +405,13 @@ const Quote = () => {
                 type="checkbox"
                 checked={formData.isInsured}
                 onChange={(e) => updateFormData('isInsured', e.target.checked)}
-                className="w-4 h-4 text-indigo-600 rounded"
+                className="w-4 h-4 rounded"
+                style={{
+                  color: theme.primary_color,
+                  borderColor: theme.border.color
+                }}
               />
-              <span className="text-sm text-slate-700">Add insurance coverage</span>
+              <span className="text-sm" style={{ color: theme.text.secondary }}>Add insurance coverage</span>
             </label>
           </Card>
 
@@ -407,34 +434,49 @@ const Quote = () => {
             {fetchingQuotes && (
               <div className="flex flex-col items-center justify-center py-12">
                 <LoadingSpinner />
-                <p className="text-sm text-slate-600 mt-4">Fetching quotes...</p>
+                <p className="text-sm mt-4" style={{ color: theme.text.secondary }}>Fetching quotes...</p>
               </div>
             )}
 
             {errors.quotes && !fetchingQuotes && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{errors.quotes}</p>
+              <div
+                className={`p-4 border ${getBorderRadius()}`}
+                style={{
+                  backgroundColor: `${theme.danger_color}0D`,
+                  borderColor: `${theme.danger_color}33`
+                }}
+              >
+                <p className="text-sm" style={{ color: theme.danger_color }}>{errors.quotes}</p>
               </div>
             )}
 
             {!fetchingQuotes && quotes.length > 0 && (
               <div className="space-y-3">
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm mb-4" style={{ color: theme.text.secondary }}>
                   Found {quotes.length} {quotes.length === 1 ? 'quote' : 'quotes'}
                 </p>
                 {quotes.map((quote) => (
                   <div
                     key={quote.quote_id}
-                    className="p-4 border-2 border-slate-200 rounded-lg hover:border-indigo-300 transition-all"
+                    className={`p-4 border-2 ${getBorderRadius()} transition-all`}
+                    style={{
+                      borderColor: theme.border.color
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = theme.primary_color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = theme.border.color;
+                    }}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <p className="font-medium text-slate-900">{quote.display_name}</p>
-                      <p className="text-lg font-bold text-indigo-600">
+                      <p className="font-medium" style={{ color: theme.text.primary }}>{quote.display_name}</p>
+                      <p className="text-lg font-bold" style={{ color: theme.primary_color }}>
                         {quote.currency} {quote.total_amount.toFixed(2)}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-600 mb-1">{quote.carrier_name}</p>
-                    <p className="text-xs text-slate-500 mb-3">
+                    <p className="text-xs mb-1" style={{ color: theme.text.secondary }}>{quote.carrier_name}</p>
+                    <p className="text-xs mb-3" style={{ color: theme.text.muted }}>
                       Delivery: {quote.estimated_days} {quote.estimated_days === 1 ? 'day' : 'days'}
                     </p>
                     <Button
@@ -453,9 +495,9 @@ const Quote = () => {
 
             {!fetchingQuotes && quotes.length === 0 && !errors.quotes && (
               <div className="text-center py-12">
-                <Package size={48} className="mx-auto text-slate-300 mb-3" />
-                <p className="text-sm text-slate-600">No quotes yet.</p>
-                <p className="text-xs text-slate-500 mt-2">Fill in the details and click "Get Quotes"</p>
+                <Package size={48} className="mx-auto mb-3" style={{ color: theme.border.color }} />
+                <p className="text-sm" style={{ color: theme.text.secondary }}>No quotes yet.</p>
+                <p className="text-xs mt-2" style={{ color: theme.text.muted }}>Fill in the details and click "Get Quotes"</p>
               </div>
             )}
           </Card>

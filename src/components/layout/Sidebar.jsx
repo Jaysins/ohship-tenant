@@ -11,8 +11,11 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTenantConfig } from '../../context/TenantConfigContext';
 
 const Sidebar = ({ isOpen, onClose, isMobile }) => {
+  const { branding, theme, content, getBorderRadius } = useTenantConfig();
+
   const navItems = [
     {
       name: 'Dashboard',
@@ -52,16 +55,40 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200">
+    <div
+      className="flex flex-col h-full"
+      style={{
+        backgroundColor: theme.background.card,
+        borderRight: `1px solid ${theme.border.color}`
+      }}
+    >
       {/* Logo/Header */}
-      <div className="flex items-center justify-between p-6 border-b border-slate-200">
+      <div
+        className="flex items-center justify-between p-6"
+        style={{ borderBottom: `1px solid ${theme.border.color}` }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <Package className="w-6 h-6 text-white" />
-          </div>
+          {branding.logo_url ? (
+            <img
+              src={branding.logo_url}
+              alt={branding.name}
+              className="w-10 h-10 object-contain"
+            />
+          ) : (
+            <div
+              className={`w-10 h-10 flex items-center justify-center ${getBorderRadius()}`}
+              style={{ backgroundColor: theme.primary_color }}
+            >
+              <Package className="w-6 h-6 text-white" />
+            </div>
+          )}
           <div>
-            <h2 className="text-lg font-bold text-slate-900">OhShip</h2>
-            <p className="text-xs text-slate-500">Shipping Portal</p>
+            <h2 className="text-lg font-bold" style={{ color: theme.text.primary }}>
+              {branding.name}
+            </h2>
+            <p className="text-xs" style={{ color: theme.text.muted }}>
+              {branding.tagline}
+            </p>
           </div>
         </div>
 
@@ -69,9 +96,14 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
         {isMobile && (
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors lg:hidden"
+            className={`p-2 transition-colors lg:hidden ${getBorderRadius()}`}
+            style={{
+              ':hover': { backgroundColor: theme.background.subtle }
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <X size={20} className="text-slate-600" />
+            <X size={20} style={{ color: theme.text.secondary }} />
           </button>
         )}
       </div>
@@ -86,16 +118,29 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
               to={item.path}
               onClick={isMobile ? onClose : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-indigo-50 text-indigo-600 font-medium'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
-                }`
+                `flex items-center gap-3 px-4 py-3 transition-all duration-200 font-medium ${getBorderRadius()}`
               }
+              style={({ isActive }) => ({
+                backgroundColor: isActive ? `${theme.primary_color}1A` : 'transparent',
+                color: isActive ? theme.primary_color : theme.text.secondary
+              })}
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.classList.contains('active')) {
+                  e.currentTarget.style.backgroundColor = theme.background.subtle;
+                  e.currentTarget.style.color = theme.text.primary;
+                }
+              }}
+              onMouseLeave={(e) => {
+                const isActive = e.currentTarget.getAttribute('aria-current') === 'page';
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = theme.text.secondary;
+                }
+              }}
             >
               {({ isActive }) => (
                 <>
-                  <Icon size={20} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                  <Icon size={20} style={{ color: isActive ? theme.primary_color : theme.text.muted }} />
                   <span>{item.name}</span>
                 </>
               )}
@@ -105,12 +150,32 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-slate-200">
-        <div className="p-4 bg-slate-50 rounded-lg">
-          <p className="text-xs font-medium text-slate-900 mb-1">Need help?</p>
-          <p className="text-xs text-slate-600 mb-3">Contact our support team</p>
-          <button className="w-full px-3 py-2 text-xs font-medium text-indigo-600 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors">
-            Get Support
+      <div className="p-4" style={{ borderTop: `1px solid ${theme.border.color}` }}>
+        <div
+          className={`p-4 ${getBorderRadius()}`}
+          style={{ backgroundColor: theme.background.subtle }}
+        >
+          <p className="text-xs font-medium mb-1" style={{ color: theme.text.primary }}>
+            {content.support_text}
+          </p>
+          <p className="text-xs mb-3" style={{ color: theme.text.secondary }}>
+            {content.support_subtext}
+          </p>
+          <button
+            className={`w-full px-3 py-2 text-xs font-medium transition-colors ${getBorderRadius()}`}
+            style={{
+              color: theme.primary_color,
+              backgroundColor: theme.background.card,
+              border: `1px solid ${theme.primary_color}33`
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = `${theme.primary_color}0D`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = theme.background.card;
+            }}
+          >
+            {content.support_button}
           </button>
         </div>
       </div>

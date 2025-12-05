@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Building2, Phone, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  const { branding, content, theme, links, getBorderRadius } = useTenantConfig();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -113,35 +115,70 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-12">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{
+        background: `linear-gradient(to bottom right, ${theme.background.page}, ${theme.background.subtle})`
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="max-w-md w-full"
       >
-        {/* Header */}
+        {/* Header with configurable branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-4">
-            <Building2 className="w-8 h-8 text-primary-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Create your account
+          {branding.logo_url ? (
+            <div className="flex justify-center mb-4">
+              <img
+                src={branding.logo_url}
+                alt={branding.name}
+                className="h-16 w-auto"
+              />
+            </div>
+          ) : (
+            <div
+              className={`inline-flex items-center justify-center w-16 h-16 mb-4 ${getBorderRadius('2xl')}`}
+              style={{
+                backgroundColor: `${theme.primary_color}1A`
+              }}
+            >
+              <Building2
+                className="w-8 h-8"
+                style={{ color: theme.primary_color }}
+              />
+            </div>
+          )}
+
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ color: theme.text.primary }}
+          >
+            {content.signup_header}
           </h1>
-          <p className="text-slate-600">
-            Start shipping smarter today
+          <p style={{ color: theme.text.secondary }}>
+            {content.signup_subtitle}
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-soft p-8">
+        <div
+          className={`shadow-soft p-8 ${getBorderRadius('2xl')}`}
+          style={{ backgroundColor: theme.background.card }}
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* API Error */}
             {apiError && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-4 bg-danger-50 border border-danger-200 rounded-lg text-danger-700 text-sm"
+                className={`p-4 border text-sm ${getBorderRadius()}`}
+                style={{
+                  backgroundColor: `${theme.danger_color}0D`,
+                  borderColor: `${theme.danger_color}33`,
+                  color: theme.danger_color
+                }}
               >
                 {apiError}
               </motion.div>
@@ -236,15 +273,28 @@ const Signup = () => {
               <input
                 type="checkbox"
                 required
-                className="w-4 h-4 mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500"
+                className="w-4 h-4 mt-0.5 rounded focus:ring-2"
+                style={{
+                  borderColor: theme.border.color,
+                  color: theme.primary_color,
+                  '--tw-ring-color': theme.primary_color
+                }}
               />
-              <label className="text-slate-600">
+              <label style={{ color: theme.text.secondary }}>
                 I agree to the{' '}
-                <Link to="/terms" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link
+                  to={links.terms_url}
+                  className="font-medium hover:underline"
+                  style={{ color: theme.primary_color }}
+                >
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="/privacy" className="text-primary-600 hover:text-primary-700 font-medium">
+                <Link
+                  to={links.privacy_url}
+                  className="font-medium hover:underline"
+                  style={{ color: theme.primary_color }}
+                >
                   Privacy Policy
                 </Link>
               </label>
@@ -267,10 +317,11 @@ const Signup = () => {
 
           {/* Sign in link */}
           <div className="mt-6 text-center text-sm">
-            <span className="text-slate-600">Already have an account? </span>
+            <span style={{ color: theme.text.secondary }}>Already have an account? </span>
             <Link
               to="/login"
-              className="text-primary-600 hover:text-primary-700 font-semibold"
+              className="font-semibold hover:underline"
+              style={{ color: theme.primary_color }}
             >
               Sign in
             </Link>

@@ -4,6 +4,7 @@ import {
   ArrowUpCircle, ArrowDownCircle, Search, Filter, Calendar,
   CheckCircle2, XCircle, Clock, Eye
 } from 'lucide-react';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -12,6 +13,7 @@ import { extractErrorMessage } from '../utils/errorHandler';
 
 const Transactions = () => {
   const navigate = useNavigate();
+  const { theme, getBorderRadius } = useTenantConfig();
 
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,36 +45,52 @@ const Transactions = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'successful':
-        return <CheckCircle2 size={16} className="text-green-600" />;
+        return <CheckCircle2 size={16} style={{ color: theme.success_color }} />;
       case 'failed':
-        return <XCircle size={16} className="text-red-600" />;
+        return <XCircle size={16} style={{ color: theme.danger_color }} />;
       case 'attempted':
       case 'pending':
-        return <Clock size={16} className="text-orange-600" />;
+        return <Clock size={16} style={{ color: theme.warning_color }} />;
       default:
-        return <Clock size={16} className="text-slate-400" />;
+        return <Clock size={16} style={{ color: theme.text.muted }} />;
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
       case 'successful':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return {
+          backgroundColor: `${theme.success_color}1A`,
+          color: theme.success_color,
+          borderColor: `${theme.success_color}33`
+        };
       case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return {
+          backgroundColor: `${theme.danger_color}1A`,
+          color: theme.danger_color,
+          borderColor: `${theme.danger_color}33`
+        };
       case 'attempted':
       case 'pending':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
+        return {
+          backgroundColor: `${theme.warning_color}1A`,
+          color: theme.warning_color,
+          borderColor: `${theme.warning_color}33`
+        };
       default:
-        return 'bg-slate-100 text-slate-800 border-slate-200';
+        return {
+          backgroundColor: theme.background.subtle,
+          color: theme.text.muted,
+          borderColor: theme.border.color
+        };
     }
   };
 
   const getActionIcon = (action) => {
     return action === 'credit' ? (
-      <ArrowUpCircle size={20} className="text-green-600" />
+      <ArrowUpCircle size={20} style={{ color: theme.success_color }} />
     ) : (
-      <ArrowDownCircle size={20} className="text-red-600" />
+      <ArrowDownCircle size={20} style={{ color: theme.danger_color }} />
     );
   };
 
@@ -131,8 +149,8 @@ const Transactions = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Transactions</h1>
-          <p className="text-slate-600 mt-1">View and manage your transaction history</p>
+          <h1 className="text-2xl font-bold" style={{ color: theme.text.primary }}>Transactions</h1>
+          <p className="mt-1" style={{ color: theme.text.secondary }}>View and manage your transaction history</p>
         </div>
       </div>
 
@@ -141,13 +159,27 @@ const Transactions = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: theme.text.muted }} />
             <input
               type="text"
               placeholder="Search by code, reference, or narration..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full pl-10 pr-4 py-2 border ${getBorderRadius()} outline-none`}
+              style={{
+                backgroundColor: theme.background.card,
+                color: theme.text.primary,
+                borderColor: theme.border.color
+              }}
+              onFocus={(e) => {
+                e.target.style.outline = `2px solid ${theme.primary_color}`;
+                e.target.style.outlineOffset = '0px';
+                e.target.style.borderColor = 'transparent';
+              }}
+              onBlur={(e) => {
+                e.target.style.outline = 'none';
+                e.target.style.borderColor = theme.border.color;
+              }}
             />
           </div>
 
@@ -155,7 +187,21 @@ const Transactions = () => {
           <select
             value={filters.status}
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className={`px-4 py-2 border ${getBorderRadius()} outline-none`}
+            style={{
+              backgroundColor: theme.background.card,
+              color: theme.text.primary,
+              borderColor: theme.border.color
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = `2px solid ${theme.primary_color}`;
+              e.target.style.outlineOffset = '0px';
+              e.target.style.borderColor = 'transparent';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.borderColor = theme.border.color;
+            }}
           >
             <option value="">All Statuses</option>
             <option value="successful">Successful</option>
@@ -168,7 +214,21 @@ const Transactions = () => {
           <select
             value={filters.transaction_type}
             onChange={(e) => setFilters(prev => ({ ...prev, transaction_type: e.target.value }))}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className={`px-4 py-2 border ${getBorderRadius()} outline-none`}
+            style={{
+              backgroundColor: theme.background.card,
+              color: theme.text.primary,
+              borderColor: theme.border.color
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = `2px solid ${theme.primary_color}`;
+              e.target.style.outlineOffset = '0px';
+              e.target.style.borderColor = 'transparent';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.borderColor = theme.border.color;
+            }}
           >
             <option value="">All Types</option>
             <option value="payment">Payment</option>
@@ -182,8 +242,14 @@ const Transactions = () => {
 
       {/* Error Display */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
+        <div
+          className={`p-4 border ${getBorderRadius()}`}
+          style={{
+            backgroundColor: `${theme.danger_color}0D`,
+            borderColor: `${theme.danger_color}33`
+          }}
+        >
+          <p className="text-sm" style={{ color: theme.danger_color }}>{error}</p>
         </div>
       )}
 
@@ -191,60 +257,75 @@ const Transactions = () => {
       <Card padding="none">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead style={{ backgroundColor: theme.background.subtle, borderBottom: `1px solid ${theme.border.color}` }}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Transaction</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Reference</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Transaction</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Reference</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase" style={{ color: theme.text.muted }}>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody style={{ backgroundColor: theme.background.card }}>
               {filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center">
-                    <p className="text-slate-500">No transactions found</p>
+                    <p style={{ color: theme.text.muted }}>No transactions found</p>
                   </td>
                 </tr>
               ) : (
                 filteredTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-slate-50">
+                  <tr
+                    key={transaction.id}
+                    className="transition-colors"
+                    style={{ borderBottom: `1px solid ${theme.border.color}` }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
                     {/* Transaction Code & Narration */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {getActionIcon(transaction.action)}
                         <div>
-                          <p className="text-sm font-medium text-slate-900">{transaction.code}</p>
-                          <p className="text-xs text-slate-500 line-clamp-1">{transaction.narration}</p>
+                          <p className="text-sm font-medium" style={{ color: theme.text.primary }}>{transaction.code}</p>
+                          <p className="text-xs line-clamp-1" style={{ color: theme.text.muted }}>{transaction.narration}</p>
                         </div>
                       </div>
                     </td>
 
                     {/* Type */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      <span
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        style={{
+                          backgroundColor: `${theme.primary_color}1A`,
+                          color: theme.primary_color
+                        }}
+                      >
                         {getTransactionTypeLabel(transaction.transaction_type)}
                       </span>
                     </td>
 
                     {/* Reference */}
                     <td className="px-6 py-4">
-                      <p className="text-sm font-mono text-slate-900">{transaction.reference}</p>
+                      <p className="text-sm font-mono" style={{ color: theme.text.primary }}>{transaction.reference}</p>
                     </td>
 
                     {/* Amount */}
                     <td className="px-6 py-4">
                       <div>
-                        <p className={`text-sm font-semibold ${
-                          transaction.action === 'credit' ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <p
+                          className="text-sm font-semibold"
+                          style={{
+                            color: transaction.action === 'credit' ? theme.success_color : theme.danger_color
+                          }}
+                        >
                           {transaction.action === 'credit' ? '+' : '-'}{formatAmount(transaction.amount, transaction.currency)}
                         </p>
                         {transaction.paid !== transaction.amount && (
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs" style={{ color: theme.text.muted }}>
                             Paid: {formatAmount(transaction.paid, transaction.currency)}
                           </p>
                         )}
@@ -255,7 +336,10 @@ const Transactions = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(transaction.status)}
-                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getStatusColor(transaction.status)}`}>
+                        <span
+                          className="px-2 py-1 rounded text-xs font-medium border"
+                          style={getStatusStyle(transaction.status)}
+                        >
                           {transaction.status}
                         </span>
                       </div>
@@ -264,8 +348,8 @@ const Transactions = () => {
                     {/* Date */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-slate-400" />
-                        <p className="text-sm text-slate-600">{formatDate(transaction.created_at)}</p>
+                        <Calendar size={14} style={{ color: theme.text.muted }} />
+                        <p className="text-sm" style={{ color: theme.text.secondary }}>{formatDate(transaction.created_at)}</p>
                       </div>
                     </td>
 
@@ -292,24 +376,24 @@ const Transactions = () => {
       {filteredTransactions.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card padding="default">
-            <p className="text-xs text-slate-600 mb-1">Total Transactions</p>
-            <p className="text-2xl font-bold text-slate-900">{filteredTransactions.length}</p>
+            <p className="text-xs mb-1" style={{ color: theme.text.muted }}>Total Transactions</p>
+            <p className="text-2xl font-bold" style={{ color: theme.text.primary }}>{filteredTransactions.length}</p>
           </Card>
           <Card padding="default">
-            <p className="text-xs text-slate-600 mb-1">Successful</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-xs mb-1" style={{ color: theme.text.muted }}>Successful</p>
+            <p className="text-2xl font-bold" style={{ color: theme.success_color }}>
               {filteredTransactions.filter(t => t.status === 'successful').length}
             </p>
           </Card>
           <Card padding="default">
-            <p className="text-xs text-slate-600 mb-1">Pending</p>
-            <p className="text-2xl font-bold text-orange-600">
+            <p className="text-xs mb-1" style={{ color: theme.text.muted }}>Pending</p>
+            <p className="text-2xl font-bold" style={{ color: theme.warning_color }}>
               {filteredTransactions.filter(t => t.status === 'attempted' || t.status === 'pending').length}
             </p>
           </Card>
           <Card padding="default">
-            <p className="text-xs text-slate-600 mb-1">Failed</p>
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-xs mb-1" style={{ color: theme.text.muted }}>Failed</p>
+            <p className="text-2xl font-bold" style={{ color: theme.danger_color }}>
               {filteredTransactions.filter(t => t.status === 'failed').length}
             </p>
           </Card>

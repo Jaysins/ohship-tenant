@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Package, TrendingUp, DollarSign, Clock, Calculator, MapPin, FileText, Wallet, ArrowUpRight, CreditCard } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import StatCard from '../components/ui/StatCard';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
@@ -13,6 +14,7 @@ import { extractErrorMessage } from '../utils/errorHandler';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { theme, content, features, getBorderRadius } = useTenantConfig();
   const [wallets, setWallets] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [loadingWallets, setLoadingWallets] = useState(true);
@@ -135,42 +137,64 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600">Welcome back! Here's what's happening with your shipments.</p>
+        <h1 className="text-2xl font-bold" style={{ color: theme.text.primary }}>
+          Dashboard
+        </h1>
+        <p style={{ color: theme.text.secondary }}>
+          {content.dashboard_greeting}
+        </p>
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{error}</p>
+        <div
+          className={`p-4 border ${getBorderRadius()}`}
+          style={{
+            backgroundColor: `${theme.danger_color}0D`,
+            borderColor: `${theme.danger_color}33`
+          }}
+        >
+          <p className="text-sm" style={{ color: theme.danger_color }}>
+            {error}
+          </p>
         </div>
       )}
 
       {/* Wallet Cards */}
-      {!loadingWallets && wallets.length > 0 && (
+      {!loadingWallets && wallets.length > 0 && features.show_wallet_balance && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {wallets.map((wallet) => (
             <Card key={wallet.id} padding="default">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    wallet.is_primary ? 'bg-indigo-100' : 'bg-slate-100'
-                  }`}>
-                    <Wallet size={24} className={wallet.is_primary ? 'text-indigo-600' : 'text-slate-600'} />
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{
+                      backgroundColor: wallet.is_primary ? `${theme.primary_color}1A` : theme.background.subtle
+                    }}
+                  >
+                    <Wallet
+                      size={24}
+                      style={{
+                        color: wallet.is_primary ? theme.primary_color : theme.text.muted
+                      }}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm font-medium" style={{ color: theme.text.secondary }}>
                         {wallet.wallet_type === 'account' ? 'Account Wallet' : 'Tenant Wallet'}
                       </p>
                       {wallet.is_primary && (
                         <Badge variant="success" size="sm">Primary</Badge>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
+                    <p className="text-2xl font-bold mt-1" style={{ color: theme.text.primary }}>
                       {formatBalance(wallet.balance, wallet.currency)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">{wallet.key}</p>
+                    <p className="text-xs mt-1" style={{ color: theme.text.muted }}>
+                      {wallet.key}
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -197,25 +221,26 @@ const Dashboard = () => {
       )}
 
       {/* Charts Row */}
-      {dashboardData && (
+      {dashboardData && features.show_dashboard_charts && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Shipment Volume Chart */}
           <Card title="Shipment Volume" subtitle="Last 7 days">
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dashboardData.shipment_volume}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.border.color} />
                 <XAxis
                   dataKey="day"
-                  stroke="#64748b"
+                  stroke={theme.text.secondary}
                   fontSize={12}
                 />
-                <YAxis stroke="#64748b" fontSize={12} />
+                <YAxis stroke={theme.text.secondary} fontSize={12} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
+                    backgroundColor: theme.background.card,
+                    border: `1px solid ${theme.border.color}`,
+                    borderRadius: '8px',
+                    color: theme.text.primary
                   }}
                   labelFormatter={(value) => {
                     const item = dashboardData.shipment_volume.find(d => d.day === value);
@@ -226,9 +251,9 @@ const Dashboard = () => {
                 <Line
                   type="monotone"
                   dataKey="count"
-                  stroke="#4f46e5"
+                  stroke={theme.primary_color}
                   strokeWidth={2}
-                  dot={{ fill: '#4f46e5', r: 4 }}
+                  dot={{ fill: theme.primary_color, r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -241,18 +266,19 @@ const Dashboard = () => {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dashboardData.spending}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.border.color} />
                 <XAxis
                   dataKey="day"
-                  stroke="#64748b"
+                  stroke={theme.text.secondary}
                   fontSize={12}
                 />
-                <YAxis stroke="#64748b" fontSize={12} />
+                <YAxis stroke={theme.text.secondary} fontSize={12} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
+                    backgroundColor: theme.background.card,
+                    border: `1px solid ${theme.border.color}`,
+                    borderRadius: '8px',
+                    color: theme.text.primary
                   }}
                   labelFormatter={(value) => {
                     const item = dashboardData.spending.find(d => d.day === value);
@@ -260,7 +286,7 @@ const Dashboard = () => {
                   }}
                   formatter={(value) => [`${dashboardData.summary.total_spent_currency} ${value.toLocaleString()}`, 'Amount']}
                 />
-                <Bar dataKey="amount" fill="#22c55e" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="amount" fill={theme.success_color} radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -273,9 +299,16 @@ const Dashboard = () => {
         {/* Recent Activity */}
         {dashboardData && dashboardData.recent_activity && dashboardData.recent_activity.length > 0 && (
           <Card title="Recent Activity" className="lg:col-span-2" padding="none">
-            <div className="divide-y divide-slate-200">
-              {dashboardData.recent_activity.slice(0, 5).map((activity) => (
-                <div key={activity.id} className="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+            <div style={{ borderTop: `1px solid ${theme.border.color}` }}>
+              {dashboardData.recent_activity.slice(0, 5).map((activity, index) => (
+                <div
+                  key={activity.id}
+                  className="px-6 py-4 transition-colors cursor-pointer"
+                  style={{
+                    borderBottom: index < 4 ? `1px solid ${theme.border.color}` : 'none'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   onClick={() => {
                     if (activity.type === 'shipment' && activity.reference_id) {
                       navigate(`/shipments/${activity.reference_id}`);
@@ -286,12 +319,22 @@ const Dashboard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      {activity.type === 'payment' && <CreditCard size={18} className="text-slate-400" />}
-                      {activity.type === 'shipment' && <Package size={18} className="text-slate-400" />}
+                      {activity.type === 'payment' && (
+                        <CreditCard size={18} style={{ color: theme.text.muted }} />
+                      )}
+                      {activity.type === 'shipment' && (
+                        <Package size={18} style={{ color: theme.text.muted }} />
+                      )}
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{activity.title}</p>
-                        <p className="text-xs text-slate-500 mt-1">{activity.description}</p>
-                        <p className="text-xs text-slate-400 mt-1">{formatDate(activity.timestamp)}</p>
+                        <p className="text-sm font-medium" style={{ color: theme.text.primary }}>
+                          {activity.title}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: theme.text.secondary }}>
+                          {activity.description}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: theme.text.muted }}>
+                          {formatDate(activity.timestamp)}
+                        </p>
                       </div>
                     </div>
                     <Badge variant={getStatusColor(activity.status)} size="sm">
@@ -308,40 +351,51 @@ const Dashboard = () => {
         {dashboardData && (!dashboardData.recent_activity || dashboardData.recent_activity.length === 0) && (
           <Card title="Recent Activity" className="lg:col-span-2" padding="default">
             <div className="text-center py-8">
-              <p className="text-sm text-slate-500">No recent activity</p>
+              <p className="text-sm" style={{ color: theme.text.muted }}>
+                No recent activity
+              </p>
             </div>
           </Card>
         )}
 
         {/* Quick Actions */}
-        <Card title="Quick Actions">
-          <div className="space-y-3">
-            {quickActions.map((action, index) => {
-              const Icon = action.icon;
-              return (
-                <Button
-                  key={index}
-                  variant={action.color}
-                  fullWidth
-                  leftIcon={<Icon size={18} />}
-                  onClick={() => navigate(action.path)}
-                >
-                  {action.label}
-                </Button>
-              );
-            })}
-          </div>
+        {features.enable_quick_actions && (
+          <Card title="Quick Actions">
+            <div className="space-y-3">
+              {quickActions.map((action, index) => {
+                const Icon = action.icon;
+                return (
+                  <Button
+                    key={index}
+                    variant={action.color}
+                    fullWidth
+                    leftIcon={<Icon size={18} />}
+                    onClick={() => navigate(action.path)}
+                  >
+                    {action.label}
+                  </Button>
+                );
+              })}
+            </div>
 
-          <div className="mt-6 p-4 bg-indigo-50 rounded-lg">
-            <p className="text-sm font-medium text-indigo-900 mb-2">Need help?</p>
-            <p className="text-xs text-indigo-700 mb-3">
-              Contact our support team for assistance
-            </p>
-            <Button variant="outline" size="sm" fullWidth>
-              Contact Support
-            </Button>
-          </div>
-        </Card>
+            {features.show_support_section && (
+              <div
+                className={`mt-6 p-4 ${getBorderRadius()}`}
+                style={{ backgroundColor: `${theme.primary_color}0D` }}
+              >
+                <p className="text-sm font-medium mb-2" style={{ color: theme.text.primary }}>
+                  {content.support_text}
+                </p>
+                <p className="text-xs mb-3" style={{ color: theme.text.secondary }}>
+                  {content.support_subtext}
+                </p>
+                <Button variant="outline" size="sm" fullWidth>
+                  {content.support_button}
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
     </div>
   );

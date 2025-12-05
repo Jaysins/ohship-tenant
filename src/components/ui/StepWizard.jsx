@@ -1,7 +1,10 @@
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTenantConfig } from '../../context/TenantConfigContext';
 
 const StepWizard = ({ steps, currentStep, onStepClick, children }) => {
+  const { theme } = useTenantConfig();
+
   return (
     <div className="w-full">
       {/* Step Progress Bar */}
@@ -19,17 +22,14 @@ const StepWizard = ({ steps, currentStep, onStepClick, children }) => {
                   <button
                     onClick={() => isClickable && onStepClick && onStepClick(index)}
                     disabled={!isClickable}
-                    className={`
-                      w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold
-                      transition-all duration-200 relative z-10
-                      ${isCompleted
-                        ? 'bg-indigo-600 text-white'
-                        : isActive
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100'
-                        : 'bg-slate-200 text-slate-500'
-                      }
-                      ${isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'}
-                    `}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 relative z-10 ${
+                      isClickable ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed'
+                    }`}
+                    style={{
+                      backgroundColor: isCompleted || isActive ? theme.primary_color : theme.background.subtle,
+                      color: isCompleted || isActive ? 'white' : theme.text.muted,
+                      boxShadow: isActive ? `0 0 0 4px ${theme.primary_color}1A` : 'none'
+                    }}
                   >
                     {isCompleted ? (
                       <motion.div
@@ -47,9 +47,10 @@ const StepWizard = ({ steps, currentStep, onStepClick, children }) => {
                   {/* Step Label */}
                   <div className="absolute -bottom-8 w-32 text-center">
                     <p
-                      className={`text-xs font-medium whitespace-nowrap ${
-                        isActive || isCompleted ? 'text-indigo-600' : 'text-slate-500'
-                      }`}
+                      className="text-xs font-medium whitespace-nowrap"
+                      style={{
+                        color: isActive || isCompleted ? theme.primary_color : theme.text.muted
+                      }}
                     >
                       {step.label}
                     </p>
@@ -58,9 +59,10 @@ const StepWizard = ({ steps, currentStep, onStepClick, children }) => {
 
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
-                  <div className="flex-1 h-1 mx-2 bg-slate-200 relative">
+                  <div className="flex-1 h-1 mx-2 relative" style={{ backgroundColor: theme.border.color }}>
                     <motion.div
-                      className="absolute top-0 left-0 h-full bg-indigo-600"
+                      className="absolute top-0 left-0 h-full"
+                      style={{ backgroundColor: theme.primary_color }}
                       initial={{ width: '0%' }}
                       animate={{ width: isCompleted ? '100%' : '0%' }}
                       transition={{ duration: 0.3 }}

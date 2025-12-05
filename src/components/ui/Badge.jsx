@@ -1,16 +1,42 @@
+import { useTenantConfig } from '../../context/TenantConfigContext';
+
 const Badge = ({
   children,
   variant = 'default',
   size = 'md',
   className = ''
 }) => {
-  const variants = {
-    default: 'bg-slate-100 text-slate-700',
-    primary: 'bg-indigo-100 text-indigo-700',
-    success: 'bg-green-100 text-green-700',
-    warning: 'bg-amber-100 text-amber-700',
-    danger: 'bg-red-100 text-red-700',
-    info: 'bg-blue-100 text-blue-700'
+  const { theme } = useTenantConfig();
+
+  // Map variants to theme colors
+  const getVariantStyle = () => {
+    const variantMap = {
+      default: {
+        backgroundColor: `${theme.text.secondary}1A`, // 10% opacity
+        color: theme.text.secondary
+      },
+      primary: {
+        backgroundColor: `${theme.primary_color}1A`,
+        color: theme.primary_color
+      },
+      success: {
+        backgroundColor: `${theme.success_color}1A`,
+        color: theme.success_color
+      },
+      warning: {
+        backgroundColor: `${theme.warning_color}1A`,
+        color: theme.warning_color
+      },
+      danger: {
+        backgroundColor: `${theme.danger_color}1A`,
+        color: theme.danger_color
+      },
+      info: {
+        backgroundColor: `${theme.info_color}1A`,
+        color: theme.info_color
+      }
+    };
+    return variantMap[variant] || variantMap.default;
   };
 
   const sizes = {
@@ -21,7 +47,8 @@ const Badge = ({
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center font-medium rounded-full ${sizes[size]} ${className}`}
+      style={getVariantStyle()}
     >
       {children}
     </span>

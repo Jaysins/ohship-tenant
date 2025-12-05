@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useTenantConfig } from '../../context/TenantConfigContext';
 
 const Input = forwardRef(
   (
@@ -15,59 +16,90 @@ const Input = forwardRef(
     },
     ref
   ) => {
-    const baseStyles =
-      'w-full px-4 py-2.5 rounded-lg border bg-white text-slate-900 placeholder-slate-400 transition-all duration-200 outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed';
+    const { theme, getBorderRadius } = useTenantConfig();
 
-    const errorStyles = error
-      ? 'border-danger-300 focus:ring-danger-500'
-      : 'border-slate-300 hover:border-slate-400';
+    const baseStyles =
+      'w-full px-4 py-2.5 border transition-all duration-200 outline-none focus:ring-2 focus:border-transparent disabled:cursor-not-allowed';
 
     const iconPaddingLeft = leftIcon ? 'pl-11' : '';
     const iconPaddingRight = rightIcon ? 'pr-11' : '';
 
+    // Build inline styles for theming
+    const inputStyles = {
+      backgroundColor: theme.background.card,
+      color: theme.text.primary,
+      borderColor: error ? theme.danger_color : theme.border.color,
+      '--focus-ring-color': error ? theme.danger_color : theme.primary_color,
+    };
+
+    const placeholderStyles = {
+      '--placeholder-color': theme.text.muted,
+    };
+
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label
+            className="block text-sm font-medium mb-1.5"
+            style={{ color: theme.text.primary }}
+          >
             {label}
-            {required && <span className="text-danger-500 ml-1">*</span>}
+            {required && <span style={{ color: theme.danger_color }} className="ml-1">*</span>}
           </label>
         )}
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <div
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{ color: theme.text.muted }}
+            >
               {leftIcon}
             </div>
           )}
 
           <input
             ref={ref}
-            className={`${baseStyles} ${errorStyles} ${iconPaddingLeft} ${iconPaddingRight} ${className}`}
+            className={`${baseStyles} ${getBorderRadius()} ${iconPaddingLeft} ${iconPaddingRight} ${className} themed-input`}
+            style={{ ...inputStyles, ...placeholderStyles }}
             {...props}
           />
 
           {rightIcon && !error && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <div
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              style={{ color: theme.text.muted }}
+            >
               {rightIcon}
             </div>
           )}
 
           {error && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-danger-500">
+            <div
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              style={{ color: theme.danger_color }}
+            >
               <AlertCircle size={18} />
             </div>
           )}
         </div>
 
         {error && (
-          <p className="mt-1.5 text-sm text-danger-600 flex items-center gap-1">
+          <p
+            className="mt-1.5 text-sm flex items-center gap-1"
+            style={{ color: theme.danger_color }}
+          >
             {error}
           </p>
         )}
 
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-slate-500">{helperText}</p>
+          <p
+            className="mt-1.5 text-sm"
+            style={{ color: theme.text.secondary }}
+          >
+            {helperText}
+          </p>
         )}
       </div>
     );

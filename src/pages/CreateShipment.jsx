@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package, MapPin, Truck, Calendar, Shield, MessageSquare, Plus, X, CheckCircle2, CheckCircle } from 'lucide-react';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
@@ -15,6 +16,7 @@ const CreateShipment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const prefilledData = location.state?.formData;
+  const { theme, getBorderRadius } = useTenantConfig();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -394,10 +396,10 @@ const CreateShipment = () => {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <MapPin size={20} className="text-indigo-600" />
+            <MapPin size={20} style={{ color: theme.primary_color }} />
             <span>Origin Address</span>
             {isSectionComplete('origin') && (
-              <CheckCircle2 size={20} className="text-green-600 ml-auto" />
+              <CheckCircle2 size={20} style={{ color: theme.success_color }} className="ml-auto" />
             )}
           </div>
         }
@@ -492,9 +494,13 @@ const CreateShipment = () => {
               type="checkbox"
               checked={formData.saveOriginAddress}
               onChange={(e) => updateFormData('saveOriginAddress', e.target.checked)}
-              className="w-4 h-4 text-indigo-600 rounded"
+              className="w-4 h-4 rounded"
+              style={{
+                color: theme.primary_color,
+                borderColor: theme.border.color
+              }}
             />
-            <span className="text-sm text-slate-700">Save this address for future use</span>
+            <span className="text-sm" style={{ color: theme.text.secondary }}>Save this address for future use</span>
           </label>
         </div>
       </Card>
@@ -503,10 +509,10 @@ const CreateShipment = () => {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <MapPin size={20} className="text-indigo-600" />
+            <MapPin size={20} style={{ color: theme.primary_color }} />
             <span>Destination Address</span>
             {isSectionComplete('destination') && (
-              <CheckCircle2 size={20} className="text-green-600 ml-auto" />
+              <CheckCircle2 size={20} style={{ color: theme.success_color }} className="ml-auto" />
             )}
           </div>
         }
@@ -601,9 +607,13 @@ const CreateShipment = () => {
               type="checkbox"
               checked={formData.saveDestinationAddress}
               onChange={(e) => updateFormData('saveDestinationAddress', e.target.checked)}
-              className="w-4 h-4 text-indigo-600 rounded"
+              className="w-4 h-4 rounded"
+              style={{
+                color: theme.primary_color,
+                borderColor: theme.border.color
+              }}
             />
-            <span className="text-sm text-slate-700">Save this address for future use</span>
+            <span className="text-sm" style={{ color: theme.text.secondary }}>Save this address for future use</span>
           </label>
         </div>
       </Card>
@@ -629,10 +639,10 @@ const CreateShipment = () => {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <Package size={20} className="text-indigo-600" />
+            <Package size={20} style={{ color: theme.primary_color }} />
             <span>Package Items</span>
             {isSectionComplete('items') && (
-              <CheckCircle2 size={20} className="text-green-600 ml-auto" />
+              <CheckCircle2 size={20} style={{ color: theme.success_color }} className="ml-auto" />
             )}
           </div>
         }
@@ -642,20 +652,44 @@ const CreateShipment = () => {
           {formData.items.map((item, index) => (
             <div
               key={index}
-              className="p-4 border border-slate-200 rounded-lg transition-all duration-300 hover:shadow-md hover:border-indigo-300 animate-in fade-in slide-in-from-top-2"
+              className={`p-4 border ${getBorderRadius()} transition-all duration-300 animate-in fade-in slide-in-from-top-2`}
+              style={{
+                borderColor: theme.border.color,
+                boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = theme.primary_color;
+                e.currentTarget.style.boxShadow = `0 4px 6px -1px ${theme.primary_color}20`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = theme.border.color;
+                e.currentTarget.style.boxShadow = '0 1px 2px 0 rgb(0 0 0 / 0.05)';
+              }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <span className="text-xs font-semibold text-indigo-600">{index + 1}</span>
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{
+                      backgroundColor: `${theme.primary_color}1A`,
+                    }}
+                  >
+                    <span className="text-xs font-semibold" style={{ color: theme.primary_color }}>{index + 1}</span>
                   </div>
-                  <h4 className="text-sm font-semibold text-slate-900">Item {index + 1}</h4>
+                  <h4 className="text-sm font-semibold" style={{ color: theme.text.primary }}>Item {index + 1}</h4>
                 </div>
                 {formData.items.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                    className="transition-colors p-1 rounded"
+                    style={{ color: theme.danger_color }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${theme.danger_color}0D`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     <X size={18} />
                   </button>
@@ -768,10 +802,10 @@ const CreateShipment = () => {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <Truck size={20} className="text-indigo-600" />
+            <Truck size={20} style={{ color: theme.primary_color }} />
             <span>Shipment Options</span>
             {isSectionComplete('options') && (
-              <CheckCircle2 size={20} className="text-green-600 ml-auto" />
+              <CheckCircle2 size={20} style={{ color: theme.success_color }} className="ml-auto" />
             )}
           </div>
         }
@@ -799,12 +833,16 @@ const CreateShipment = () => {
               type="checkbox"
               checked={formData.isInsured}
               onChange={(e) => updateFormData('isInsured', e.target.checked)}
-              className="w-4 h-4 text-indigo-600 rounded"
+              className="w-4 h-4 rounded"
+              style={{
+                color: theme.primary_color,
+                borderColor: theme.border.color
+              }}
             />
-            <span className="text-sm text-slate-700">Add insurance coverage to this shipment</span>
+            <span className="text-sm" style={{ color: theme.text.secondary }}>Add insurance coverage to this shipment</span>
           </label>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: theme.text.secondary }}>
               Customer Notes
             </label>
             <textarea
@@ -812,7 +850,21 @@ const CreateShipment = () => {
               onChange={(e) => updateFormData('customerNotes', e.target.value)}
               placeholder="Any special instructions or notes..."
               rows={3}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+              className={`w-full px-3 py-2 border ${getBorderRadius()} resize-none outline-none`}
+              style={{
+                backgroundColor: theme.background.card,
+                color: theme.text.primary,
+                borderColor: theme.border.color
+              }}
+              onFocus={(e) => {
+                e.target.style.outline = `2px solid ${theme.primary_color}`;
+                e.target.style.outlineOffset = '0px';
+                e.target.style.borderColor = 'transparent';
+              }}
+              onBlur={(e) => {
+                e.target.style.outline = 'none';
+                e.target.style.borderColor = theme.border.color;
+              }}
             />
           </div>
         </div>
@@ -841,13 +893,19 @@ const CreateShipment = () => {
           {fetchingQuotes && (
             <div className="flex flex-col items-center justify-center py-8">
               <LoadingSpinner />
-              <p className="text-sm text-slate-600 mt-4">Fetching shipping quotes...</p>
+              <p className="text-sm mt-4" style={{ color: theme.text.secondary }}>Fetching shipping quotes...</p>
             </div>
           )}
 
           {errors.quotes && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errors.quotes}</p>
+            <div
+              className={`p-4 border ${getBorderRadius()}`}
+              style={{
+                backgroundColor: `${theme.danger_color}0D`,
+                borderColor: `${theme.danger_color}33`
+              }}
+            >
+              <p className="text-sm" style={{ color: theme.danger_color }}>{errors.quotes}</p>
               <Button
                 variant="primary"
                 size="sm"
@@ -861,7 +919,7 @@ const CreateShipment = () => {
 
           {!fetchingQuotes && quotes.length > 0 && (
             <div className="space-y-3">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm" style={{ color: theme.text.secondary }}>
                 Select a shipping service to continue:
               </p>
               {quotes.map((quote) => (
@@ -869,20 +927,33 @@ const CreateShipment = () => {
                   key={quote.quote_id}
                   type="button"
                   onClick={() => setSelectedQuote(quote)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all duration-200 ${
-                    selectedQuote?.quote_id === quote.quote_id
-                      ? 'border-indigo-600 bg-indigo-50 shadow-md'
-                      : 'border-slate-200 hover:border-indigo-300 hover:shadow-sm'
-                  }`}
+                  className={`w-full text-left p-4 ${getBorderRadius()} border-2 transition-all duration-200`}
+                  style={{
+                    borderColor: selectedQuote?.quote_id === quote.quote_id ? theme.primary_color : theme.border.color,
+                    backgroundColor: selectedQuote?.quote_id === quote.quote_id ? `${theme.primary_color}0D` : 'transparent',
+                    boxShadow: selectedQuote?.quote_id === quote.quote_id ? `0 4px 6px -1px ${theme.primary_color}20` : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedQuote?.quote_id !== quote.quote_id) {
+                      e.currentTarget.style.borderColor = `${theme.primary_color}66`;
+                      e.currentTarget.style.boxShadow = '0 1px 2px 0 rgb(0 0 0 / 0.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedQuote?.quote_id !== quote.quote_id) {
+                      e.currentTarget.style.borderColor = theme.border.color;
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
                 >
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-slate-900">{quote.display_name}</p>
-                    <p className="text-lg font-bold text-slate-900">
+                    <p className="font-medium" style={{ color: theme.text.primary }}>{quote.display_name}</p>
+                    <p className="text-lg font-bold" style={{ color: theme.text.primary }}>
                       {quote.currency} {quote.total_amount.toFixed(2)}
                     </p>
                   </div>
-                  <p className="text-xs text-slate-600">{quote.carrier_name}</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs" style={{ color: theme.text.secondary }}>{quote.carrier_name}</p>
+                  <p className="text-xs mt-1" style={{ color: theme.text.muted }}>
                     Estimated delivery: {quote.estimated_days} {quote.estimated_days === 1 ? 'day' : 'days'}
                   </p>
                 </button>
@@ -892,7 +963,7 @@ const CreateShipment = () => {
 
           {!fetchingQuotes && quotes.length === 0 && !errors.quotes && (
             <div className="text-center py-8">
-              <p className="text-sm text-slate-600">No quotes available yet.</p>
+              <p className="text-sm" style={{ color: theme.text.secondary }}>No quotes available yet.</p>
             </div>
           )}
         </div>
@@ -918,15 +989,24 @@ const CreateShipment = () => {
     <div className="space-y-6">
       {/* Error Display at Top */}
       {errors.shipment && (
-        <div className="p-4 bg-red-50 border-2 border-red-300 rounded-lg animate-in fade-in slide-in-from-top-2">
+        <div
+          className={`p-4 border-2 ${getBorderRadius()} animate-in fade-in slide-in-from-top-2`}
+          style={{
+            backgroundColor: `${theme.danger_color}0D`,
+            borderColor: theme.danger_color
+          }}
+        >
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center mt-0.5">
+            <div
+              className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
+              style={{ backgroundColor: theme.danger_color }}
+            >
               <span className="text-white text-xs font-bold">!</span>
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-red-900 mb-1">Failed to Create Shipment</h3>
-              <p className="text-sm text-red-700">{errors.shipment}</p>
-              <p className="text-xs text-red-600 mt-2">Please review your information and try again.</p>
+              <h3 className="text-sm font-semibold mb-1" style={{ color: theme.danger_color }}>Failed to Create Shipment</h3>
+              <p className="text-sm" style={{ color: theme.danger_color }}>{errors.shipment}</p>
+              <p className="text-xs mt-2" style={{ color: theme.danger_color }}>Please review your information and try again.</p>
             </div>
           </div>
         </div>
@@ -936,38 +1016,38 @@ const CreateShipment = () => {
         <div className="space-y-6">
           {/* Addresses Summary */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Addresses</h3>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Addresses</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs font-semibold text-slate-600 mb-1">Origin</p>
-                <p className="text-sm text-slate-900">{formData.originAddressLine1}</p>
-                <p className="text-sm text-slate-900">
+              <div className={`p-3 ${getBorderRadius()}`} style={{ backgroundColor: theme.background.subtle }}>
+                <p className="text-xs font-semibold mb-1" style={{ color: theme.text.muted }}>Origin</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>{formData.originAddressLine1}</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>
                   {formData.originCity}, {formData.originState} {formData.originPostalCode}
                 </p>
-                <p className="text-sm text-slate-900">{formData.originCountry}</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>{formData.originCountry}</p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg">
-                <p className="text-xs font-semibold text-slate-600 mb-1">Destination</p>
-                <p className="text-sm text-slate-900">{formData.destinationAddressLine1}</p>
-                <p className="text-sm text-slate-900">
+              <div className={`p-3 ${getBorderRadius()}`} style={{ backgroundColor: theme.background.subtle }}>
+                <p className="text-xs font-semibold mb-1" style={{ color: theme.text.muted }}>Destination</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>{formData.destinationAddressLine1}</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>
                   {formData.destinationCity}, {formData.destinationState} {formData.destinationPostalCode}
                 </p>
-                <p className="text-sm text-slate-900">{formData.destinationCountry}</p>
+                <p className="text-sm" style={{ color: theme.text.primary }}>{formData.destinationCountry}</p>
               </div>
             </div>
           </div>
 
           {/* Items Summary */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Items</h3>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Items</h3>
             <div className="space-y-2">
               {formData.items.map((item, index) => (
-                <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                  <p className="text-sm font-medium text-slate-900">
+                <div key={index} className={`p-3 ${getBorderRadius()}`} style={{ backgroundColor: theme.background.subtle }}>
+                  <p className="text-sm font-medium" style={{ color: theme.text.primary }}>
                     Item {index + 1}: {item.packageType} - {item.weight}kg
                   </p>
                   {item.description && (
-                    <p className="text-xs text-slate-600">{item.description}</p>
+                    <p className="text-xs" style={{ color: theme.text.secondary }}>{item.description}</p>
                   )}
                 </div>
               ))}
@@ -976,32 +1056,32 @@ const CreateShipment = () => {
 
           {/* Shipment Options */}
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">Shipment Options</h3>
-            <div className="p-3 bg-slate-50 rounded-lg space-y-2">
+            <h3 className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Shipment Options</h3>
+            <div className={`p-3 ${getBorderRadius()} space-y-2`} style={{ backgroundColor: theme.background.subtle }}>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-600">Pickup Type:</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs" style={{ color: theme.text.muted }}>Pickup Type:</span>
+                <span className="text-sm font-medium" style={{ color: theme.text.primary }}>
                   {pickupTypes.find(p => p.value === formData.pickupType)?.label || formData.pickupType}
                 </span>
               </div>
               {formData.pickupType === 'scheduled_pickup' && formData.pickupScheduledAt && (
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-slate-600">Pickup Date:</span>
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className="text-xs" style={{ color: theme.text.muted }}>Pickup Date:</span>
+                  <span className="text-sm font-medium" style={{ color: theme.text.primary }}>
                     {new Date(formData.pickupScheduledAt).toLocaleDateString()}
                   </span>
                 </div>
               )}
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-600">Insurance:</span>
-                <span className="text-sm font-medium text-slate-900">
+                <span className="text-xs" style={{ color: theme.text.muted }}>Insurance:</span>
+                <span className="text-sm font-medium" style={{ color: theme.text.primary }}>
                   {formData.isInsured ? 'Yes' : 'No'}
                 </span>
               </div>
               {formData.customerNotes && (
-                <div className="pt-2 border-t border-slate-200">
-                  <span className="text-xs text-slate-600 block mb-1">Notes:</span>
-                  <p className="text-sm text-slate-900">{formData.customerNotes}</p>
+                <div className="pt-2" style={{ borderTop: `1px solid ${theme.border.color}` }}>
+                  <span className="text-xs block mb-1" style={{ color: theme.text.muted }}>Notes:</span>
+                  <p className="text-sm" style={{ color: theme.text.primary }}>{formData.customerNotes}</p>
                 </div>
               )}
             </div>
@@ -1010,29 +1090,35 @@ const CreateShipment = () => {
           {/* Selected Quote */}
           {selectedQuote && (
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Selected Service & Pricing</h3>
-              <div className="p-4 bg-indigo-50 border-2 border-indigo-600 rounded-lg">
+              <h3 className="text-sm font-semibold mb-3" style={{ color: theme.text.primary }}>Selected Service & Pricing</h3>
+              <div
+                className={`p-4 border-2 ${getBorderRadius()}`}
+                style={{
+                  backgroundColor: `${theme.primary_color}0D`,
+                  borderColor: theme.primary_color
+                }}
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="font-medium text-slate-900">{selectedQuote.display_name}</p>
-                    <p className="text-xs text-slate-600">{selectedQuote.carrier_name}</p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="font-medium" style={{ color: theme.text.primary }}>{selectedQuote.display_name}</p>
+                    <p className="text-xs" style={{ color: theme.text.secondary }}>{selectedQuote.carrier_name}</p>
+                    <p className="text-xs mt-1" style={{ color: theme.text.muted }}>
                       Estimated delivery: {selectedQuote.estimated_days} {selectedQuote.estimated_days === 1 ? 'day' : 'days'}
                     </p>
                   </div>
-                  <p className="text-xl font-bold text-slate-900">
+                  <p className="text-xl font-bold" style={{ color: theme.text.primary }}>
                     {selectedQuote.currency} {selectedQuote.total_amount.toFixed(2)}
                   </p>
                 </div>
 
                 {/* Rate Breakdown */}
-                <div className="pt-3 border-t border-indigo-200 space-y-2">
-                  <p className="text-xs font-semibold text-slate-700 mb-2">Rate Breakdown:</p>
+                <div className="pt-3 space-y-2" style={{ borderTop: `1px solid ${theme.primary_color}33` }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color: theme.text.secondary }}>Rate Breakdown:</p>
 
                   {/* Base Rate */}
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-600">Base Rate:</span>
-                    <span className="text-sm text-slate-900">
+                    <span className="text-xs" style={{ color: theme.text.muted }}>Base Rate:</span>
+                    <span className="text-sm" style={{ color: theme.text.primary }}>
                       {selectedQuote.currency} {selectedQuote.base_rate.toFixed(2)}
                     </span>
                   </div>
@@ -1042,13 +1128,13 @@ const CreateShipment = () => {
                     <>
                       {selectedQuote.adjustments.map((adjustment, index) => (
                         <div key={index} className="flex justify-between items-center">
-                          <span className="text-xs text-slate-600">
+                          <span className="text-xs" style={{ color: theme.text.muted }}>
                             {adjustment.description}
                             {adjustment.calculation_type === 'percentage' && adjustment.rate && (
                               <span className="text-[10px] ml-1">({adjustment.rate}%)</span>
                             )}:
                           </span>
-                          <span className="text-sm text-slate-900">
+                          <span className="text-sm" style={{ color: theme.text.primary }}>
                             {selectedQuote.currency} {adjustment.amount.toFixed(2)}
                           </span>
                         </div>
@@ -1061,13 +1147,13 @@ const CreateShipment = () => {
                     <>
                       {selectedQuote.discounts.map((discount, index) => (
                         <div key={index} className="flex justify-between items-center">
-                          <span className="text-xs text-green-600">
+                          <span className="text-xs" style={{ color: theme.success_color }}>
                             {discount.description || 'Discount'}
                             {discount.calculation_type === 'percentage' && discount.rate && (
                               <span className="text-[10px] ml-1">({discount.rate}%)</span>
                             )}:
                           </span>
-                          <span className="text-sm text-green-600">
+                          <span className="text-sm" style={{ color: theme.success_color }}>
                             -{selectedQuote.currency} {discount.amount.toFixed(2)}
                           </span>
                         </div>
@@ -1076,9 +1162,9 @@ const CreateShipment = () => {
                   )}
 
                   {/* Total */}
-                  <div className="flex justify-between items-center pt-2 border-t border-indigo-300">
-                    <span className="text-xs font-semibold text-slate-700">Total:</span>
-                    <span className="text-base font-bold text-slate-900">
+                  <div className="flex justify-between items-center pt-2" style={{ borderTop: `1px solid ${theme.primary_color}66` }}>
+                    <span className="text-xs font-semibold" style={{ color: theme.text.secondary }}>Total:</span>
+                    <span className="text-base font-bold" style={{ color: theme.text.primary }}>
                       {selectedQuote.currency} {selectedQuote.total_amount.toFixed(2)}
                     </span>
                   </div>
@@ -1110,8 +1196,8 @@ const CreateShipment = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Create Shipment</h1>
-        <p className="text-slate-600">Complete the steps below to create your shipment</p>
+        <h1 className="text-2xl font-bold" style={{ color: theme.text.primary }}>Create Shipment</h1>
+        <p style={{ color: theme.text.secondary }}>Complete the steps below to create your shipment</p>
       </div>
 
       {/* Step Wizard */}

@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Bell, User, LogOut, Settings, ChevronDown, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { useTenantConfig } from '../../context/TenantConfigContext';
 import { getPrimaryWallet } from '../../services/walletService';
 
 const Navbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
+  const { theme, features, getBorderRadius } = useTenantConfig();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [wallet, setWallet] = useState(null);
@@ -51,21 +53,30 @@ const Navbar = ({ onMenuClick }) => {
   };
 
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <nav
+      className="sticky top-0 z-30"
+      style={{
+        backgroundColor: theme.background.card,
+        borderBottom: `1px solid ${theme.border.color}`
+      }}
+    >
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Menu button (mobile) */}
           <div className="flex items-center gap-4">
             <button
               onClick={onMenuClick}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors lg:hidden"
+              className={`p-2 transition-colors lg:hidden ${getBorderRadius()}`}
+              style={{ color: theme.text.secondary }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <Menu size={20} className="text-slate-600" />
+              <Menu size={20} />
             </button>
 
             {/* Breadcrumb / Page title - hidden on mobile */}
             <div className="hidden sm:block">
-              <h1 className="text-lg font-semibold text-slate-900">
+              <h1 className="text-lg font-semibold" style={{ color: theme.text.primary }}>
                 Welcome back, {user?.first_name || 'User'}
               </h1>
             </div>
@@ -74,15 +85,25 @@ const Navbar = ({ onMenuClick }) => {
           {/* Right: Wallet, Notifications & User menu */}
           <div className="flex items-center gap-3">
             {/* Wallet Balance */}
-            {!loadingWallet && wallet && (
+            {!loadingWallet && wallet && features.show_wallet_balance && (
               <Link
                 to="/transactions"
-                className="hidden sm:flex items-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                className={`hidden sm:flex items-center gap-2 px-3 py-2 transition-colors ${getBorderRadius()}`}
+                style={{
+                  backgroundColor: `${theme.primary_color}0D`,
+                  color: theme.primary_color
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `${theme.primary_color}1A`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = `${theme.primary_color}0D`;
+                }}
               >
-                <Wallet size={18} className="text-indigo-600" />
+                <Wallet size={18} />
                 <div className="text-left">
-                  <p className="text-[10px] text-indigo-600 font-medium">Wallet Balance</p>
-                  <p className="text-sm font-bold text-indigo-900">
+                  <p className="text-[10px] font-medium">Wallet Balance</p>
+                  <p className="text-sm font-bold">
                     {formatBalance(wallet.balance, wallet.currency)}
                   </p>
                 </div>
@@ -90,20 +111,33 @@ const Navbar = ({ onMenuClick }) => {
             )}
 
             {/* Notifications */}
-            <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
-              <Bell size={20} className="text-slate-600" />
+            <button
+              className={`relative p-2 transition-colors ${getBorderRadius()}`}
+              style={{ color: theme.text.secondary }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <Bell size={20} />
               {/* Notification badge */}
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span
+                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                style={{ backgroundColor: theme.danger_color }}
+              />
             </button>
 
             {/* User Menu */}
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-3 p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className={`flex items-center gap-3 p-2 transition-colors ${getBorderRadius()}`}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: theme.primary_color }}
+                >
                   <span className="text-sm font-medium text-white">
                     {getInitials(user?.full_name || user?.first_name)}
                   </span>
@@ -112,16 +146,20 @@ const Navbar = ({ onMenuClick }) => {
                 {/* User info - hidden on mobile */}
                 <div className="hidden sm:flex items-center gap-2">
                   <div className="text-left">
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium" style={{ color: theme.text.primary }}>
                       {user?.full_name || `${user?.first_name} ${user?.last_name}`}
                     </p>
-                    <p className="text-xs text-slate-500">{user?.role || 'User'}</p>
+                    <p className="text-xs" style={{ color: theme.text.muted }}>
+                      {user?.role || 'User'}
+                    </p>
                   </div>
                   <ChevronDown
                     size={16}
-                    className={`text-slate-500 transition-transform ${
-                      showUserMenu ? 'rotate-180' : ''
-                    }`}
+                    className="transition-transform"
+                    style={{
+                      color: theme.text.muted,
+                      transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)'
+                    }}
                   />
                 </div>
               </button>
@@ -142,20 +180,38 @@ const Navbar = ({ onMenuClick }) => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50"
+                      className={`absolute right-0 mt-2 w-56 shadow-lg py-2 z-50 ${getBorderRadius()}`}
+                      style={{
+                        backgroundColor: theme.background.card,
+                        border: `1px solid ${theme.border.color}`
+                      }}
                     >
                       {/* User info in dropdown - mobile only */}
-                      <div className="px-4 py-3 border-b border-slate-200 sm:hidden">
-                        <p className="text-sm font-medium text-slate-900">
+                      <div
+                        className="px-4 py-3 sm:hidden"
+                        style={{ borderBottom: `1px solid ${theme.border.color}` }}
+                      >
+                        <p className="text-sm font-medium" style={{ color: theme.text.primary }}>
                           {user?.full_name || `${user?.first_name} ${user?.last_name}`}
                         </p>
-                        <p className="text-xs text-slate-500">{user?.email}</p>
+                        <p className="text-xs" style={{ color: theme.text.muted }}>
+                          {user?.email}
+                        </p>
                       </div>
 
                       <Link
                         to="/profile"
                         onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-sm transition-colors"
+                        style={{ color: theme.text.secondary }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.background.subtle;
+                          e.currentTarget.style.color = theme.text.primary;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = theme.text.secondary;
+                        }}
                       >
                         <User size={16} />
                         <span>Profile</span>
@@ -164,17 +220,33 @@ const Navbar = ({ onMenuClick }) => {
                       <Link
                         to="/settings"
                         onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-sm transition-colors"
+                        style={{ color: theme.text.secondary }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.background.subtle;
+                          e.currentTarget.style.color = theme.text.primary;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = theme.text.secondary;
+                        }}
                       >
                         <Settings size={16} />
                         <span>Settings</span>
                       </Link>
 
-                      <div className="border-t border-slate-200 my-2"></div>
+                      <div className="my-2" style={{ borderTop: `1px solid ${theme.border.color}` }} />
 
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
+                        className="flex items-center gap-3 px-4 py-2 text-sm transition-colors w-full"
+                        style={{ color: theme.danger_color }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = `${theme.danger_color}0D`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                       >
                         <LogOut size={16} />
                         <span>Sign out</span>

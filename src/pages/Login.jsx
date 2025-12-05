@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Building2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useTenantConfig } from '../context/TenantConfigContext';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { branding, content, theme, features, links, getBorderRadius } = useTenantConfig();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -72,35 +74,70 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background: `linear-gradient(to bottom right, ${theme.background.page}, ${theme.background.subtle})`
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="max-w-md w-full"
       >
-        {/* Header */}
+        {/* Header with configurable branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-4">
-            <Building2 className="w-8 h-8 text-primary-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Welcome back
+          {branding.logo_url ? (
+            <div className="flex justify-center mb-4">
+              <img
+                src={branding.logo_url}
+                alt={branding.name}
+                className="h-16 w-auto"
+              />
+            </div>
+          ) : (
+            <div
+              className={`inline-flex items-center justify-center w-16 h-16 mb-4 ${getBorderRadius('2xl')}`}
+              style={{
+                backgroundColor: `${theme.primary_color}1A` // 10% opacity
+              }}
+            >
+              <Building2
+                className="w-8 h-8"
+                style={{ color: theme.primary_color }}
+              />
+            </div>
+          )}
+
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ color: theme.text.primary }}
+          >
+            {content.login_header}
           </h1>
-          <p className="text-slate-600">
-            Sign in to access your shipping portal
+          <p style={{ color: theme.text.secondary }}>
+            {content.login_subtitle}
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-soft p-8">
+        <div
+          className={`shadow-soft p-8 ${getBorderRadius('2xl')}`}
+          style={{ backgroundColor: theme.background.card }}
+        >
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* API Error */}
             {apiError && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-4 bg-danger-50 border border-danger-200 rounded-lg text-danger-700 text-sm"
+                className={`p-4 border text-sm ${getBorderRadius()}`}
+                style={{
+                  backgroundColor: `${theme.danger_color}0D`,
+                  borderColor: `${theme.danger_color}33`,
+                  color: theme.danger_color
+                }}
               >
                 {apiError}
               </motion.div>
@@ -134,18 +171,26 @@ const Login = () => {
               autoComplete="current-password"
             />
 
-            {/* Forgot Password */}
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500"
-                />
-                <span className="text-slate-600">Remember me</span>
-              </label>
+              {features.enable_remember_me && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded focus:ring-2"
+                    style={{
+                      borderColor: theme.border.color,
+                      color: theme.primary_color,
+                      '--tw-ring-color': theme.primary_color
+                    }}
+                  />
+                  <span style={{ color: theme.text.secondary }}>Remember me</span>
+                </label>
+              )}
               <Link
                 to="/forgot-password"
-                className="text-primary-600 hover:text-primary-700 font-medium"
+                className="font-medium hover:underline"
+                style={{ color: theme.primary_color }}
               >
                 Forgot password?
               </Link>
@@ -168,19 +213,38 @@ const Login = () => {
 
           {/* Sign up link */}
           <div className="mt-6 text-center text-sm">
-            <span className="text-slate-600">Don't have an account? </span>
+            <span style={{ color: theme.text.secondary }}>Don't have an account? </span>
             <Link
               to="/signup"
-              className="text-primary-600 hover:text-primary-700 font-semibold"
+              className="font-semibold hover:underline"
+              style={{ color: theme.primary_color }}
             >
               Sign up
             </Link>
           </div>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-sm text-slate-500 mt-6">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+        {/* Footer with configurable links */}
+        <p
+          className="text-center text-sm mt-6"
+          style={{ color: theme.text.muted }}
+        >
+          By signing in, you agree to our{' '}
+          <a
+            href={links.terms_url}
+            className="hover:underline"
+            style={{ color: theme.primary_color }}
+          >
+            Terms of Service
+          </a>
+          {' '}and{' '}
+          <a
+            href={links.privacy_url}
+            className="hover:underline"
+            style={{ color: theme.primary_color }}
+          >
+            Privacy Policy
+          </a>
         </p>
       </motion.div>
     </div>
