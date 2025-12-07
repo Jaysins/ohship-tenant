@@ -11,7 +11,7 @@ import api from '../utils/api';
  */
 export const getWallets = async () => {
   try {
-    const response = await api.get('/wallets/');
+    const response = await api.get('/wallets/?view=customer');
 
     if (response.status === 'success' && response.data) {
       return response.data;

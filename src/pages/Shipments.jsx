@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Package, MapPin, ArrowRight, Clock } from 'lucide-react';
+import { Plus, Package, MapPin, ArrowRight, Clock, Search } from 'lucide-react';
 import { useTenantConfig } from '../context/TenantConfigContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Pagination from '../components/ui/Pagination';
 import { getShipments } from '../services/shipmentService';
 
 const Shipments = () => {
@@ -15,20 +16,71 @@ const Shipments = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    status: '',
+    code: '',
+    shipment_type: '',
+    pickup_type: '',
+    search: ''
+  });
+
+  // Local search input state (separate from filters)
+  const [searchInput, setSearchInput] = useState('');
+
   useEffect(() => {
     loadShipments();
-  }, []);
+  }, [currentPage, itemsPerPage, filters]);
 
   const loadShipments = async () => {
     try {
       setLoading(true);
-      const data = await getShipments();
+      setError(null);
+
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        ...(filters.status && { status: filters.status }),
+        ...(filters.code && { code: filters.code }),
+        ...(filters.shipment_type && { shipment_type: filters.shipment_type }),
+        ...(filters.pickup_type && { pickup_type: filters.pickup_type }),
+        ...(filters.search && { search: filters.search })
+      };
+
+      const data = await getShipments(params);
       setShipments(data.items || []);
+      setTotalItems(data.total || 0);
+      setTotalPages(data.total_pages || Math.ceil((data.total || 0) / itemsPerPage));
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const handleSearch = () => {
+    setFilters(prev => ({ ...prev, search: searchInput }));
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page when items per page changes
   };
 
   const getStatusStyle = (status) => {
@@ -92,6 +144,129 @@ const Shipments = () => {
           </Button>
         )}
       </div>
+
+      {/* Filters */}
+      <Card padding="default">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Search */}
+          <div className="relative lg:col-span-2 flex gap-2">
+            <div className="relative flex-1">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: theme.text.muted }} />
+              <input
+                type="text"
+                placeholder="Search by name or code..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+                className={`w-full pl-10 pr-4 py-2 border ${getBorderRadius()} outline-none`}
+                style={{
+                  backgroundColor: theme.background.card,
+                  color: theme.text.primary,
+                  borderColor: theme.border.color
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = `2px solid ${theme.primary_color}`;
+                  e.target.style.outlineOffset = '0px';
+                  e.target.style.borderColor = 'transparent';
+                }}
+                onBlur={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.borderColor = theme.border.color;
+                }}
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={handleSearch}
+            >
+              Search
+            </Button>
+          </div>
+
+          {/* Status Filter */}
+          <select
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+            className={`px-4 py-2 border ${getBorderRadius()} outline-none`}
+            style={{
+              backgroundColor: theme.background.card,
+              color: theme.text.primary,
+              borderColor: theme.border.color
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = `2px solid ${theme.primary_color}`;
+              e.target.style.outlineOffset = '0px';
+              e.target.style.borderColor = 'transparent';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.borderColor = theme.border.color;
+            }}
+          >
+            <option value="">All Statuses</option>
+            <option value="pending_pickup">Pending Pickup</option>
+            <option value="in_transit">In Transit</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          {/* Shipment Type Filter */}
+          <select
+            value={filters.shipment_type}
+            onChange={(e) => handleFilterChange('shipment_type', e.target.value)}
+            className={`px-4 py-2 border ${getBorderRadius()} outline-none`}
+            style={{
+              backgroundColor: theme.background.card,
+              color: theme.text.primary,
+              borderColor: theme.border.color
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = `2px solid ${theme.primary_color}`;
+              e.target.style.outlineOffset = '0px';
+              e.target.style.borderColor = 'transparent';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.borderColor = theme.border.color;
+            }}
+          >
+            <option value="">All Shipment Types</option>
+            <option value="parcel">Parcel</option>
+            <option value="document">Document</option>
+            <option value="freight">Freight</option>
+          </select>
+
+          {/* Pickup Type Filter */}
+          <select
+            value={filters.pickup_type}
+            onChange={(e) => handleFilterChange('pickup_type', e.target.value)}
+            className={`px-4 py-2 border ${getBorderRadius()} outline-none`}
+            style={{
+              backgroundColor: theme.background.card,
+              color: theme.text.primary,
+              borderColor: theme.border.color
+            }}
+            onFocus={(e) => {
+              e.target.style.outline = `2px solid ${theme.primary_color}`;
+              e.target.style.outlineOffset = '0px';
+              e.target.style.borderColor = 'transparent';
+            }}
+            onBlur={(e) => {
+              e.target.style.outline = 'none';
+              e.target.style.borderColor = theme.border.color;
+            }}
+          >
+            <option value="">All Pickup Types</option>
+            <option value="scheduled_pickup">Scheduled Pickup</option>
+            <option value="drop_off">Drop Off</option>
+          </select>
+        </div>
+      </Card>
 
       {/* Error State */}
       {error && (
@@ -233,6 +408,21 @@ const Shipments = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="px-6 py-4" style={{ borderTop: `1px solid ${theme.border.color}` }}>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                itemsPerPageOptions={[10, 20, 50, 100]}
+              />
+            </div>
+          )}
         </Card>
       )}
     </div>

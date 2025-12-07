@@ -45,12 +45,34 @@ export const createShipment = async (shipmentData) => {
 };
 
 /**
- * Get all shipments
- * @returns {Promise<Array>} List of shipments
+ * Get shipments with pagination and filters
+ * @param {Object} params - Query parameters
+ * @param {number} params.page - Page number (default: 1)
+ * @param {number} params.limit - Items per page (default: 10)
+ * @param {string} params.status - Filter by status
+ * @param {string} params.code - Filter by shipment code
+ * @param {string} params.shipment_type - Filter by shipment type
+ * @param {string} params.pickup_type - Filter by pickup type
+ * @param {string} params.search - Search by name
+ * @returns {Promise<Object>} Paginated shipments response with items and metadata
  */
-export const getShipments = async () => {
+export const getShipments = async (params = {}) => {
   try {
-    const response = await api.get('/shipments/');
+    // Build query string from params
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.code) queryParams.append('code', params.code);
+    if (params.shipment_type) queryParams.append('shipment_type', params.shipment_type);
+    if (params.pickup_type) queryParams.append('pickup_type', params.pickup_type);
+    if (params.search) queryParams.append('search', params.search);
+
+    const queryString = queryParams.toString();
+    const url = `/shipments/${queryString ? `?${queryString}` : ''}`;
+
+    const response = await api.get(url);
 
     if (response.status === 'success' && response.data) {
       return response.data;
@@ -79,6 +101,26 @@ export const getShipmentById = async (shipmentId) => {
     throw new Error(response.message || 'Failed to fetch shipment');
   } catch (error) {
     console.error('Error fetching shipment:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get shipment tracking information by code
+ * @param {string} shipmentCode - Shipment code
+ * @returns {Promise<Object>} Tracking data with events and status progression
+ */
+export const getShipmentTracking = async (shipmentCode) => {
+  try {
+    const response = await api.get(`/shipments/${shipmentCode}/track/`);
+
+    if (response.status === 'success' && response.data) {
+      return response.data;
+    }
+
+    throw new Error(response.message || 'Failed to fetch tracking information');
+  } catch (error) {
+    console.error('Error fetching tracking information:', error);
     throw error;
   }
 };

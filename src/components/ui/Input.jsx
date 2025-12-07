@@ -1,5 +1,5 @@
-import { forwardRef } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { forwardRef, useState } from 'react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useTenantConfig } from '../../context/TenantConfigContext';
 
 const Input = forwardRef(
@@ -12,11 +12,17 @@ const Input = forwardRef(
       required = false,
       leftIcon,
       rightIcon,
+      type,
       ...props
     },
     ref
   ) => {
     const { theme, getBorderRadius } = useTenantConfig();
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Determine actual input type
+    const isPasswordField = type === 'password';
+    const inputType = isPasswordField && showPassword ? 'text' : type;
 
     const baseStyles =
       'w-full px-4 py-2.5 border transition-all duration-200 outline-none focus:ring-2 focus:border-transparent disabled:cursor-not-allowed';
@@ -60,12 +66,27 @@ const Input = forwardRef(
 
           <input
             ref={ref}
+            type={inputType}
             className={`${baseStyles} ${getBorderRadius()} ${iconPaddingLeft} ${iconPaddingRight} ${className} themed-input`}
             style={{ ...inputStyles, ...placeholderStyles }}
             {...props}
           />
 
-          {rightIcon && !error && (
+          {/* Password visibility toggle */}
+          {isPasswordField && !error && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-70 transition-opacity"
+              style={{ color: theme.text.muted }}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          )}
+
+          {/* Right icon (only if not password field and no error) */}
+          {rightIcon && !error && !isPasswordField && (
             <div
               className="absolute right-3 top-1/2 -translate-y-1/2"
               style={{ color: theme.text.muted }}
@@ -74,6 +95,7 @@ const Input = forwardRef(
             </div>
           )}
 
+          {/* Error icon */}
           {error && (
             <div
               className="absolute right-3 top-1/2 -translate-y-1/2"

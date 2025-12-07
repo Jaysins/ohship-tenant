@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { getThemeConfig, getCacheInfo } from '../services/themeService';
 
 const TenantConfigContext = createContext();
 
-// Default configuration
+// Default configuration (fallback only)
 const defaultConfig = {
   branding: {
     name: 'Someship',
@@ -84,6 +85,7 @@ const generateColorShades = (baseColor) => {
 export const TenantConfigProvider = ({ children }) => {
   const [config, setConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadTenantConfig();
@@ -91,21 +93,44 @@ export const TenantConfigProvider = ({ children }) => {
 
   const loadTenantConfig = async () => {
     try {
-      // In production, this would fetch from your API
-      // const response = await fetch('/api/tenant/config');
-      // const data = await response.json();
+      setLoading(true);
+      setError(null);
 
-      // For now, use default config or localStorage
-      const savedConfig = localStorage.getItem('tenantConfig');
-      if (savedConfig) {
-        const parsedConfig = JSON.parse(savedConfig);
-        setConfig({ ...defaultConfig, ...parsedConfig });
-        applyThemeToDOM(parsedConfig.theme);
-      } else {
-        applyThemeToDOM(defaultConfig.theme);
-      }
+      // Log cache info for debugging
+      const cacheInfo = getCacheInfo();
+      console.log('Theme cache info:', cacheInfo);
+
+      // Get theme config with efficient caching
+      const themeData = await getThemeConfig();
+
+      // Merge with default config to ensure all fields exist
+      const mergedConfig = {
+        branding: { ...defaultConfig.branding, ...themeData.branding },
+        theme: { ...defaultConfig.theme, ...themeData.theme },
+        content: { ...defaultConfig.content, ...themeData.content },
+        links: { ...defaultConfig.links, ...themeData.links },
+        features: { ...defaultConfig.features, ...themeData.features }
+      };
+
+      setConfig(mergedConfig);
+      applyThemeToDOM(mergedConfig.theme);
+      applyBrandingToDOM(mergedConfig.branding);
+
+      console.log('Theme loaded successfully:', {
+        branding: mergedConfig.branding.name,
+        primaryColor: mergedConfig.theme.primary_color,
+        version: themeData.version,
+        cachedAt: themeData.updated_at
+      });
     } catch (error) {
       console.error('Error loading tenant config:', error);
+      setError(error.message || 'Failed to load theme configuration');
+
+      // Fallback to default config
+      console.log('Using default configuration as fallback');
+      setConfig(defaultConfig);
+      applyThemeToDOM(defaultConfig.theme);
+      applyBrandingToDOM(defaultConfig.branding);
     } finally {
       setLoading(false);
     }
@@ -117,55 +142,89 @@ export const TenantConfigProvider = ({ children }) => {
     // Apply CSS custom properties for easy access
     root.style.setProperty('--color-primary', theme.primary_color);
     root.style.setProperty('--color-secondary', theme.secondary_color);
-    root.style.setProperty('--color-accent', theme.accent_color);
     root.style.setProperty('--color-success', theme.success_color);
     root.style.setProperty('--color-warning', theme.warning_color);
     root.style.setProperty('--color-danger', theme.danger_color);
     root.style.setProperty('--color-info', theme.info_color);
 
     // Background colors
-    root.style.setProperty('--bg-page', theme.background.page);
-    root.style.setProperty('--bg-card', theme.background.card);
-    root.style.setProperty('--bg-subtle', theme.background.subtle);
+    root.style.setProperty('--bg-page', theme.background?.page || '#f8fafc');
+    root.style.setProperty('--bg-card', theme.background?.card || '#ffffff');
+    root.style.setProperty('--bg-subtle', theme.background?.subtle || '#f1f5f9');
 
     // Text colors
-    root.style.setProperty('--text-primary', theme.text.primary);
-    root.style.setProperty('--text-secondary', theme.text.secondary);
-    root.style.setProperty('--text-muted', theme.text.muted);
+    root.style.setProperty('--text-primary', theme.text?.primary || '#0f172a');
+    root.style.setProperty('--text-secondary', theme.text?.secondary || '#64748b');
+    root.style.setProperty('--text-muted', theme.text?.muted || '#94a3b8');
 
     // Border
-    root.style.setProperty('--border-color', theme.border.color);
-    root.style.setProperty('--border-radius', theme.border.radius);
+    root.style.setProperty('--border-color', theme.border?.color || '#e2e8f0');
+    root.style.setProperty('--border-radius', theme.border?.radius || 'lg');
 
-    // Font family
-    if (theme.font_family) {
-      root.style.setProperty('--font-family', theme.font_family);
+    // Apply font family to body
+    const fontFamily = theme.font_family || 'Inter';
+    if (fontFamily) {
+      // Set CSS custom property
+      root.style.setProperty('--font-family', fontFamily);
+      // Actually apply to body
+      document.body.style.fontFamily = `'${fontFamily}', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`;
     }
 
-    // Load custom font if URL provided
+    // Load custom font from URL if provided
     if (theme.font_url) {
-      const link = document.createElement('link');
-      link.href = theme.font_url;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
+      const existingFont = document.querySelector(`link[href="${theme.font_url}"]`);
+      if (!existingFont) {
+        const link = document.createElement('link');
+        link.href = theme.font_url;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
+    } else if (fontFamily) {
+      // If no custom URL but font_family is specified, try to load from Google Fonts
+      // Common fonts that should be loaded from Google Fonts
+      const googleFonts = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Nunito', 'Raleway'];
 
-    // Update favicon
-    if (theme.favicon_url) {
-      const favicon = document.querySelector("link[rel*='icon']");
-      if (favicon) {
-        favicon.href = theme.favicon_url;
+      if (googleFonts.includes(fontFamily)) {
+        const fontWeights = '300;400;500;600;700;800;900';
+        const googleFontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}:wght@${fontWeights}&display=swap`;
+
+        // Check if this font isn't already loaded
+        const existingGoogleFont = document.querySelector(`link[href*="fonts.googleapis.com"][href*="${fontFamily.replace(' ', '+')}"]`);
+        if (!existingGoogleFont) {
+          const link = document.createElement('link');
+          link.href = googleFontUrl;
+          link.rel = 'stylesheet';
+          document.head.appendChild(link);
+          console.log(`Loading Google Font: ${fontFamily}`);
+        }
       }
     }
   };
 
-  const updateConfig = (newConfig) => {
-    const updatedConfig = { ...config, ...newConfig };
-    setConfig(updatedConfig);
-    localStorage.setItem('tenantConfig', JSON.stringify(updatedConfig));
-    if (newConfig.theme) {
-      applyThemeToDOM(updatedConfig.theme);
+  const applyBrandingToDOM = (branding) => {
+    // Update favicon
+    if (branding.favicon_url) {
+      let favicon = document.querySelector("link[rel*='icon']");
+      if (!favicon) {
+        favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        document.head.appendChild(favicon);
+      }
+      favicon.href = branding.favicon_url;
     }
+
+    // Update document title with brand name
+    if (branding.name) {
+      document.title = `${branding.name} - Shipping Portal`;
+    }
+  };
+
+  /**
+   * Reload theme configuration
+   * Useful for forcing a fresh fetch or after manual cache clear
+   */
+  const reloadTheme = () => {
+    loadTenantConfig();
   };
 
   // Helper function to get border radius class
@@ -183,8 +242,9 @@ export const TenantConfigProvider = ({ children }) => {
 
   const value = {
     config,
-    updateConfig,
     loading,
+    error,
+    reloadTheme,
     getBorderRadius,
     branding: config.branding,
     theme: config.theme,

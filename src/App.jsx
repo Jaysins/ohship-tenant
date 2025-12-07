@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Quote from './pages/Quote';
 import Tracking from './pages/Tracking';
+import TrackingDetail from './pages/TrackingDetail';
 import Shipments from './pages/Shipments';
 import CreateShipment from './pages/CreateShipment';
 import ShipmentDetail from './pages/ShipmentDetail';
@@ -62,6 +63,16 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <Tracking />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tracking/:code"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <TrackingDetail />
                 </AppLayout>
               </ProtectedRoute>
             }
