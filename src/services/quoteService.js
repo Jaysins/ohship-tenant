@@ -6,16 +6,26 @@ import api from '../utils/api';
  */
 
 /**
- * Fetch shipping quotes based on package and destination details
- * @param {Object} quoteData - The quote request data
- * @returns {Promise<Array>} Array of quote objects
+ * Fetch shipping quotes from backend
+ *
+ * Backend returns complete response with:
+ * - rates: array of available quotes (each with quote_id)
+ * - origin: normalized origin location
+ * - destination: normalized destination location
+ * - items: normalized items array
+ * - is_insured: insurance status
+ *
+ * @param {import('../utils/storage').QuoteRequest} quoteData - The quote request data
+ * @returns {Promise<import('../utils/storage').QuoteResponse>} Full quote response from backend
  */
 export const fetchShippingQuotes = async (quoteData) => {
   try {
     const response = await api.post('/quotes/', quoteData);
 
     if (response.status === 'success' && response.data) {
-      return response.data;
+      // Return the FULL response object (not just data)
+      // This includes status, message, and data
+      return response;
     }
 
     throw new Error(response.message || 'Failed to fetch quotes');

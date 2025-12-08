@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Package, MapPin, ArrowRight, Clock, Search } from 'lucide-react';
+import { Plus, Package, MapPin, ArrowRight, Clock, Search, Calendar } from 'lucide-react';
 import { useTenantConfig } from '../context/TenantConfigContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Pagination from '../components/ui/Pagination';
+import ShipmentDetailSidebar from '../components/shipments/ShipmentDetailSidebar';
 import { getShipments } from '../services/shipmentService';
 
 const Shipments = () => {
@@ -15,6 +16,10 @@ const Shipments = () => {
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Sidebar state
+  const [selectedShipmentId, setSelectedShipmentId] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,6 +119,16 @@ const Shipments = () => {
     });
   };
 
+  const handleViewShipment = (shipmentId) => {
+    setSelectedShipmentId(shipmentId);
+    setIsSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedShipmentId(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -138,7 +153,7 @@ const Shipments = () => {
           <Button
             variant="primary"
             leftIcon={<Plus size={18} />}
-            onClick={() => navigate('/shipments/create')}
+            onClick={() => navigate('/quote/create')}
           >
             Create Shipment
           </Button>
@@ -290,128 +305,127 @@ const Shipments = () => {
           title="No shipments yet"
           description="Start by creating your first shipment. Get quotes, select a service, and ship with ease."
           actionLabel="Create Shipment"
-          onAction={() => navigate('/shipments/create')}
+          onAction={() => navigate('/quote/create')}
         />
       ) : (
         <Card padding="none">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead style={{ backgroundColor: theme.background.subtle, borderBottom: `1px solid ${theme.border.color}` }}>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Shipment
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Route
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Carrier
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody style={{ backgroundColor: theme.background.card }}>
-                {shipments.map((shipment) => (
-                  <tr
-                    key={shipment.id}
-                    className="transition-colors cursor-pointer"
-                    style={{ borderBottom: `1px solid ${theme.border.color}` }}
-                    onClick={() => navigate(`/shipments/${shipment.id}`)}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Package size={16} style={{ color: theme.text.muted }} className="mr-2" />
-                        <div>
-                          <div className="text-sm font-medium" style={{ color: theme.text.primary }}>
-                            {shipment.code}
-                          </div>
-                          {shipment.awb_no && (
-                            <div className="text-xs" style={{ color: theme.text.muted }}>
-                              AWB: {shipment.awb_no}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-1">
-                            <MapPin size={12} style={{ color: theme.text.muted }} />
-                            <span className="font-medium" style={{ color: theme.text.primary }}>
-                              {shipment.origin_address.city}, {shipment.origin_address.country}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <ArrowRight size={12} style={{ color: theme.text.muted }} />
-                            <span style={{ color: theme.text.secondary }}>
-                              {shipment.destination_address.city}, {shipment.destination_address.country}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm" style={{ color: theme.text.primary }}>
-                        {shipment.carrier_name}
-                      </div>
-                      <div className="text-xs capitalize" style={{ color: theme.text.muted }}>
-                        {shipment.service_type}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                        style={getStatusStyle(shipment.status)}
-                      >
-                        {formatStatus(shipment.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium" style={{ color: theme.text.primary }}>
-                        {shipment.currency} {shipment.final_price.toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1 text-sm" style={{ color: theme.text.muted }}>
-                        <Clock size={12} />
-                        <span>{formatDate(shipment.created_at)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/shipments/${shipment.id}`);
+          <table className="w-full">
+            <thead style={{ backgroundColor: theme.background.subtle, borderBottom: `1px solid ${theme.border.color}` }}>
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Shipment
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Route
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Carrier
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Date
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: theme.text.muted }}>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody style={{ backgroundColor: theme.background.card, borderTop: `1px solid ${theme.border.color}` }}>
+              {shipments.map((shipment) => (
+                <tr
+                  key={shipment.id}
+                  className="transition-colors cursor-pointer"
+                  style={{ borderBottom: `1px solid ${theme.border.color}` }}
+                  onClick={() => handleViewShipment(shipment.id)}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.background.subtle}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: `linear-gradient(135deg, ${theme.primary_color}, ${theme.primary_color}dd)`,
+                          borderRadius: getBorderRadius()
                         }}
                       >
-                        View Details
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <Package size={16} style={{ color: '#ffffff' }} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate" style={{ color: theme.text.primary }}>
+                          {shipment.code || 'N/A'}
+                        </p>
+                        <p className="text-xs truncate" style={{ color: theme.text.muted }}>
+                          {shipment.service_type || 'Standard'}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 text-sm min-w-0">
+                      <span
+                        className="truncate max-w-[80px]"
+                        style={{ color: theme.text.primary }}
+                        title={shipment.origin_address.city}
+                      >
+                        {shipment.origin_address.city}
+                      </span>
+                      <ArrowRight size={12} style={{ color: theme.text.muted }} className="flex-shrink-0" />
+                      <span
+                        className="truncate max-w-[80px]"
+                        style={{ color: theme.text.primary }}
+                        title={shipment.destination_address.city}
+                      >
+                        {shipment.destination_address.city}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-sm font-medium truncate" style={{ color: theme.text.primary }}>
+                      {shipment.carrier_name || 'N/A'}
+                    </p>
+                    <span className="inline-flex items-center text-xs capitalize" style={{ color: theme.text.secondary }}>
+                      {shipment.pickup_type.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold capitalize whitespace-nowrap ${getBorderRadius()}`}
+                      style={getStatusStyle(shipment.status)}
+                    >
+                      {formatStatus(shipment.status)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1 text-sm" style={{ color: theme.text.primary }}>
+                      <Calendar size={12} style={{ color: theme.text.muted }} className="flex-shrink-0" />
+                      <span className="whitespace-nowrap">
+                        {new Date(shipment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewShipment(shipment.id);
+                      }}
+                    >
+                      View
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
           {/* Pagination */}
           {totalItems > 0 && (
-            <div className="px-6 py-4" style={{ borderTop: `1px solid ${theme.border.color}` }}>
+            <div className="px-4 py-4" style={{ borderTop: `1px solid ${theme.border.color}` }}>
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
@@ -425,6 +439,13 @@ const Shipments = () => {
           )}
         </Card>
       )}
+
+      {/* Shipment Detail Sidebar */}
+      <ShipmentDetailSidebar
+        shipmentId={selectedShipmentId}
+        isOpen={isSidebarOpen}
+        onClose={handleCloseSidebar}
+      />
     </div>
   );
 };

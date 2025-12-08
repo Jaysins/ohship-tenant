@@ -26,6 +26,14 @@ import PaymentFailed from './pages/payment/PaymentFailed';
 import CheckoutExpired from './pages/payment/CheckoutExpired';
 import PaymentUploadSuccess from './pages/payment/PaymentUploadSuccess';
 
+// New Quote Flow pages
+import CreateShipmentQuote from './pages/CreateShipmentQuote';
+import SelectQuote from './pages/SelectQuote';
+import QuoteCheckout from './pages/QuoteCheckout';
+import QuotePayment from './pages/QuotePayment';
+import BankTransferDetails from './pages/BankTransferDetails';
+import QuoteSuccess from './pages/QuoteSuccess';
+
 function App() {
   return (
     <TenantConfigProvider>
@@ -215,6 +223,68 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <PaymentUploadSuccess />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* New Quote Flow routes */}
+          <Route
+            path="/quote/create"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <CreateShipmentQuote />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quote/select"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <SelectQuote />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quote/checkout"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <QuoteCheckout />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quote/payment/:shipmentId"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <QuotePayment />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quote/payment/:shipmentId/bank-transfer"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <BankTransferDetails />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quote/success/:shipmentId"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <QuoteSuccess />
                 </AppLayout>
               </ProtectedRoute>
             }

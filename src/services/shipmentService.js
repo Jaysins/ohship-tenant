@@ -26,7 +26,7 @@ export const getSavedAddresses = async () => {
 
 /**
  * Create a new shipment
- * @param {Object} shipmentData - Complete shipment data
+ * @param {import('../utils/storage').CreateShipmentRequest} shipmentData - Complete shipment data
  * @returns {Promise<Object>} Created shipment
  */
 export const createShipment = async (shipmentData) => {
@@ -145,9 +145,9 @@ export const getItemCategories = async () => {
 };
 
 /**
- * Update shipment payment method and potentially other details
+ * Update an existing shipment (used in review mode)
  * @param {string} shipmentId - Shipment ID to update
- * @param {Object} updateData - Data to update (e.g., selected_payment_method)
+ * @param {import('../utils/storage').UpdateShipmentRequest} updateData - Data to update (can include quote_id, addresses, items, etc.)
  * @returns {Promise<Object>} Updated shipment or error with new quotes
  */
 export const updateShipment = async (shipmentId, updateData) => {

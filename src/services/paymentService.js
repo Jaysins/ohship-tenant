@@ -67,3 +67,27 @@ export const validatePayment = async (paymentId) => {
     throw error;
   }
 };
+
+/**
+ * Upload payment proof for bank transfer
+ * @param {string} transactionId - Transaction ID
+ * @param {File} file - Payment proof file (PDF, PNG, or JPEG)
+ * @returns {Promise<Object>} Upload result
+ */
+export const uploadPaymentProof = async (transactionId, file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.upload(`/transactions/${transactionId}/upload-proof/`, formData);
+
+    if (response.status === 'success' && response.data) {
+      return response.data;
+    }
+
+    throw new Error(response.message || 'Failed to upload payment proof');
+  } catch (error) {
+    console.error('Error uploading payment proof:', error);
+    throw error;
+  }
+};

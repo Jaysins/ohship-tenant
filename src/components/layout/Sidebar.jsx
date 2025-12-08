@@ -24,7 +24,7 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
     },
     {
       name: 'Get Quote',
-      path: '/quote',
+      path: '/quote/create',
       icon: Calculator
     },
     {
